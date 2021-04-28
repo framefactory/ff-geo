@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "CommonJS",
+        "experimentalDecorators": true,
+        "sourceMap": true,
+
+        "outDir": "../dist/test",
+        "rootDir": ".",
+
+        "baseUrl": ".",
+        "paths": {
+            "@ff/geo/*": [ "../src/*" ],
+        }
+    },
+    "include": [
+        "**/*"
+    ],
+    "references": [
+        { "path": ".." }
+    ]
+}
