@@ -2,4 +2,4 @@
 
 API agnostic geometric primitives for WebGL and WebGPU.
 
-Copyright 2021 [Frame Factory GmbH](https://framefactory.ch), [Ralph Wiedemeier](https://about.me/ralphw)  
+Copyright 2022 [Frame Factory GmbH](https://framefactory.ch), [Ralph Wiedemeier](https://about.me/ralphw)  
