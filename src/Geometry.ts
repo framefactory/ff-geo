@@ -1,11 +1,11 @@
 /**
- * FF Typescript/React Foundation Library
+ * FF Typescript Foundation Library
  * Copyright 2021 Ralph Wiedemeier, Frame Factory GmbH
  *
  * License: MIT
  */
 
-import BufferLayout from "./BufferLayout";
+import { BufferLayout } from "./BufferLayout.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,7 +26,7 @@ export interface IGeometryPart
     topology: ETopology;
 }
 
-export default abstract class Geometry
+export abstract class Geometry
 {
     readonly parts: IGeometryPart[] = [];
     readonly layout = new BufferLayout();
@@ -76,7 +76,7 @@ export default abstract class Geometry
     {
         this.layout.vertexCount = vertexCount;
         this._vertexBufferSize = this.layout.byteSize;
-        this._indexBufferSize = BufferLayout.indexBufferSize(indexCount);
+        //this._indexBufferSize = BufferLayout.indexBufferSize(indexCount);
 
     }
     

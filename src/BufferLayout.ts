@@ -59,7 +59,7 @@ export interface IBufferAttribute
     interleaved: boolean;
 }
 
-export default class BufferLayout
+export class BufferLayout
 {
     static P2T2(): BufferLayout {
         return new BufferLayout().addP2T2();
@@ -188,22 +188,6 @@ export default class BufferLayout
 
             for (let k = i + 1; k < j; ++k) {
                 const attr = attribs[k];
-                attr.offset = _roundToNext(offset + stride, attr.elementSize);
-                stride += attr.byteSize;
-            }
-
-            stride = _roundToNext(stride, maxSize);
-
-            for (let k = i; k < j; ++k) {
-                attribs[k].stride = stride;
-            }
-
-            i = j - 1;
-        }
-
-        this._byteSize = offset + stride * count;
-    }
-}       const attr = attribs[k];
                 attr.offset = _roundToNext(offset + stride, attr.elementSize);
                 stride += attr.byteSize;
             }
