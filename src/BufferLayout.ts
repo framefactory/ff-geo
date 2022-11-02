@@ -1,54 +1,52 @@
 /**
  * FF Typescript Foundation Library
- * Copyright 2021 Ralph Wiedemeier, Frame Factory GmbH
+ * Copyright 2022 Ralph Wiedemeier, Frame Factory GmbH
  *
  * License: MIT
  */
 
-////////////////////////////////////////////////////////////////////////////////
-
 const _roundToNext = (v, m) => v + m - ((v + m - 1) % m) - 1;
 
-export enum EAttributeSemantic
-{
+export enum EAttributeSemantic {
     Position = "position",
     Normal = "normal",
-    UV = "uv",
-    UV2 = "uv2",
+    TexCoord = "texCoord",
     Color = "color",
     Tangent = "tangent",
     Bitangent = "bitangent",
 }
 
-export enum EElementType
-{
+export enum EElementType {
     Int8,
     UInt8,
     Norm8,
     UNorm8,
     Int16,
     UInt16,
+    Norm16,
+    UNorm16,
     Int32,
     UInt32,
     Float16,
     Float32,
 }
 
-const _elementSize = {
+export const elementSizes = {
     [EElementType.Int8]: 1,
     [EElementType.UInt8]: 1,
     [EElementType.Norm8]: 1,
     [EElementType.UNorm8]: 1,
     [EElementType.Int16]: 2,
     [EElementType.UInt16]: 2,
+    [EElementType.Norm16]: 2,
+    [EElementType.UNorm16]: 2,
     [EElementType.Int32]: 4,
     [EElementType.UInt32]: 4,
     [EElementType.Float16]: 2,
     [EElementType.Float32]: 4,
 }
 
-export interface IBufferAttribute
-{
+export interface IBufferAttribute {
     name: string;
     type: EElementType;
     elementCount: number;
@@ -61,13 +59,8 @@ export interface IBufferAttribute
 
 export class BufferLayout
 {
-    static P2T2(): BufferLayout {
-        return new BufferLayout().addP2T2();
-    }
-
-    static P3N3T2(): BufferLayout {
-        return new BufferLayout().addP3N3T2();
-    }
+    static P2T2 = new BufferLayout().addP2T2();
+    static P3N3T2 = new BufferLayout().addP3N3T2();
 
     private _attribList: IBufferAttribute[] = [];
     private _attribDict: Record<string, IBufferAttribute> = {};
@@ -87,6 +80,10 @@ export class BufferLayout
          return this._vertexCount;
      }
 
+     get attributes(): IBufferAttribute[] {
+        return this._attribList;
+     }
+
     /**
      * The total size of the buffer in bytes.
      */
@@ -100,21 +97,21 @@ export class BufferLayout
      * @param type The individual type of an attribute's element.
      * @param elementCount The number of elements of this attribute.
      * @param interleaved If true, the attribute is interleaved with the previous one(s).
-     * @param normalized If true, the attribute element's values are treated as normalized.
      */
     addAttribute(
         name: string,
         type: EElementType,
         elementCount: number,
-        interleaved = true
+        interleaved = true,
+        skipUpdate = false
     ): this {
 
         const attrib: IBufferAttribute = {
             name,
             type,
             elementCount,
-            elementSize: _elementSize[type],
-            byteSize: elementCount * _elementSize[type],
+            elementSize: elementSizes[type],
+            byteSize: elementCount * elementSizes[type],
             interleaved,
             stride: 0,
             offset: 0,
@@ -123,22 +120,25 @@ export class BufferLayout
         this._attribDict[name] = attrib;
         this._attribList.push(attrib);
 
-        this.updateLayout();
+        if (!skipUpdate) {
+            this.updateLayout();
+        }
+
         return this;
     }
 
     addP2T2(): this
     {
-        this.addAttribute(EAttributeSemantic.Position, EElementType.Float32, 2);
-        this.addAttribute(EAttributeSemantic.UV, EElementType.Float32, 2);
+        this.addAttribute(EAttributeSemantic.Position, EElementType.Float32, 2, true, true);
+        this.addAttribute(EAttributeSemantic.TexCoord, EElementType.Float32, 2);
         return this;
     }
 
     addP3N3T2(): this
     {
-        this.addAttribute(EAttributeSemantic.Position, EElementType.Float32, 3);
-        this.addAttribute(EAttributeSemantic.Normal, EElementType.Float32, 3);
-        this.addAttribute(EAttributeSemantic.UV, EElementType.Float32, 2);
+        this.addAttribute(EAttributeSemantic.Position, EElementType.Float32, 3, true, true);
+        this.addAttribute(EAttributeSemantic.Normal, EElementType.Float32, 3, true, true);
+        this.addAttribute(EAttributeSemantic.TexCoord, EElementType.Float32, 2);
         return this;
     }
 

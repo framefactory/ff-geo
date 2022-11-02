@@ -7,7 +7,7 @@
 
 import { Geometry } from "./Geometry.js";
 
-export class Box extends Geometry
+export class Cylinder extends Geometry
 {
-
+    
 }

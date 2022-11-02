@@ -15,7 +15,7 @@ export interface IPlaneParams {
     back: boolean;
 }
 
-export default class Plane extends Geometry
+export class Plane extends Geometry
 {
     static readonly defaultParams: IPlaneParams = {
         size: [ 1, 1 ],
@@ -25,18 +25,14 @@ export default class Plane extends Geometry
 
     readonly params: IPlaneParams;
 
-    constructor(params?: IPlaneParams)
+    constructor(params?: Partial<IPlaneParams>)
     {
         super();
-
         this.params = { ...Plane.defaultParams, ...params };
-        this.layout.addP3N3T2();
         this.addParts("front", "back");
-
-        this.layout.dump();
     }
 
-    prepare()
+    onPrepare()
     {
         const params = this.params;
         const tx = params.tesselation[0];
@@ -56,8 +52,11 @@ export default class Plane extends Geometry
         }
     }
 
-    generate(vertexBuffer: ArrayBuffer, indexBuffer: ArrayBuffer)
+    onGenerate(vertexBuffer: ArrayBuffer, indexBuffer: ArrayBuffer)
     {
+        const vertices = new Float32Array(vertexBuffer);
+        const indices = new this.IndexArrayConstructor(indexBuffer);
+
         const params = this.params;
         const tess = params.tesselation;
         const size = params.size;
@@ -68,23 +67,25 @@ export default class Plane extends Geometry
 
         const sx = size[0];
         const sy = size[1];
+        const ax = -0.5 * sx;
+        const ay = -0.5 * sy
         const dx = 1 / tx;
         const dy = 1 / ty;
 
         let i = 0;
         for (let iy = 0; iy <= ty; ++iy) {
-            const v = iy * dy;
-            const y = v * sy;
+            const fy = iy * dy;
+            const y = ay + fy * sy;
             for (let ix = 0; ix <= tx; ++ix) {
-                const u = ix * dx;
-                vertexBuffer[i++] = u * sx;
-                vertexBuffer[i++] = y;
-                vertexBuffer[i++] = 0;
-                vertexBuffer[i++] = 0;
-                vertexBuffer[i++] = 0;
-                vertexBuffer[i++] = 1;
-                vertexBuffer[i++] = u;
-                vertexBuffer[i++] = v;
+                const fx = ix * dx;
+                vertices[i++] = ax + fx * sx;
+                vertices[i++] = y;
+                vertices[i++] = 0;
+                vertices[i++] = 0;
+                vertices[i++] = 0;
+                vertices[i++] = 1;
+                vertices[i++] = fx;
+                vertices[i++] = 1.0 - fy;
             }    
         }
 
@@ -93,12 +94,12 @@ export default class Plane extends Geometry
             const yy = iy * nx;
             for (let ix = 0; ix < tx; ++ix) {
                 const x = yy + ix; 
-                indexBuffer[i++] = x;
-                indexBuffer[i++] = x + nx;
-                indexBuffer[i++] = x + nx + 1;
-                indexBuffer[i++] = x;
-                indexBuffer[i++] = x + nx + 1;
-                indexBuffer[i++] = x + 1;
+                indices[i++] = x;
+                indices[i++] = x + nx;
+                indices[i++] = x + nx + 1;
+                indices[i++] = x;
+                indices[i++] = x + nx + 1;
+                indices[i++] = x + 1;
             }
         }
     }
