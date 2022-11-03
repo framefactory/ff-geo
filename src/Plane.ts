@@ -1,10 +1,11 @@
 /**
  * FF Typescript Foundation Library
- * Copyright 2021 Ralph Wiedemeier, Frame Factory GmbH
+ * Copyright 2022 Ralph Wiedemeier, Frame Factory GmbH
  *
  * License: MIT
  */
 
+import * as generators from "./generators.js"
 import { Geometry } from "./Geometry.js";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -12,6 +13,7 @@ import { Geometry } from "./Geometry.js";
 export interface IPlaneParams {
     size: [ number, number ];
     tesselation: [ number, number ];
+    front: boolean;
     back: boolean;
 }
 
@@ -20,7 +22,8 @@ export class Plane extends Geometry
     static readonly defaultParams: IPlaneParams = {
         size: [ 1, 1 ],
         tesselation: [ 1, 1 ],
-        back: false,
+        front: true,
+        back: true,
     };
 
     readonly params: IPlaneParams;
@@ -29,27 +32,32 @@ export class Plane extends Geometry
     {
         super();
         this.params = { ...Plane.defaultParams, ...params };
-        this.addParts("front", "back");
+        this.defineParts("front", "back");
     }
 
     onPrepare()
     {
         const params = this.params;
-        const tx = params.tesselation[0];
-        const ty = params.tesselation[1];
+        const [ tx, ty ] = params.tesselation;
 
-        const vertexCount = (tx + 1) * (ty + 1);
-        const indexCount = tx * ty * 6;
+        const vcFace = (tx + 1) * (ty + 1);
+        const icFace = tx * ty * 6;
+        let vcTotal = 0;
+        let icTotal = 0;
 
-        this.setPart(0, 0, indexCount);
+        if (params.front) {
+            this.setPart(0, icTotal, icFace);
+            vcTotal += vcFace;
+            icTotal += icFace;
+        }
 
         if (params.back) {
-            this.setCount(vertexCount * 2, indexCount * 2);
-            this.setPart(1, indexCount, indexCount);
+            this.setPart(1, icTotal, icFace);
+            vcTotal += vcFace;
+            icTotal += icFace;
         }
-        else {
-            this.setCount(vertexCount, indexCount);
-        }
+
+        this.setCount(vcTotal, icTotal);
     }
 
     onGenerate(vertexBuffer: ArrayBuffer, indexBuffer: ArrayBuffer)
@@ -58,49 +66,24 @@ export class Plane extends Geometry
         const indices = new this.IndexArrayConstructor(indexBuffer);
 
         const params = this.params;
-        const tess = params.tesselation;
-        const size = params.size;
+        const center = [ 0, 0, 0 ];
+        const size = [ params.size[0], params.size[1], 0 ];
+        const tess = [ params.tesselation[0], params.tesselation[1], 0 ];
 
-        const tx = tess[0];
-        const ty = tess[1];
-        const nx = tx + 1;
+        let vi = 0, ii = 0;
 
-        const sx = size[0];
-        const sy = size[1];
-        const ax = -0.5 * sx;
-        const ay = -0.5 * sy
-        const dx = 1 / tx;
-        const dy = 1 / ty;
-
-        let i = 0;
-        for (let iy = 0; iy <= ty; ++iy) {
-            const fy = iy * dy;
-            const y = ay + fy * sy;
-            for (let ix = 0; ix <= tx; ++ix) {
-                const fx = ix * dx;
-                vertices[i++] = ax + fx * sx;
-                vertices[i++] = y;
-                vertices[i++] = 0;
-                vertices[i++] = 0;
-                vertices[i++] = 0;
-                vertices[i++] = 1;
-                vertices[i++] = fx;
-                vertices[i++] = 1.0 - fy;
-            }    
+        if (params.front) {
+            ii = generators.generatePlaneIndices(indices, ii, vi/8, 0,
+                tess);
+            vi = generators.generatePlaneVertices(vertices, vi, 0,
+                center, size, tess);
         }
 
-        i = 0;
-        for (let iy = 0; iy < ty; ++iy) {
-            const yy = iy * nx;
-            for (let ix = 0; ix < tx; ++ix) {
-                const x = yy + ix; 
-                indices[i++] = x;
-                indices[i++] = x + nx;
-                indices[i++] = x + nx + 1;
-                indices[i++] = x;
-                indices[i++] = x + nx + 1;
-                indices[i++] = x + 1;
-            }
+        if (params.back) {
+            ii = generators.generatePlaneIndices(indices, ii, vi/8, 1,
+                tess);
+            vi = generators.generatePlaneVertices(vertices, vi, 1,
+                center, size, tess);
         }
     }
 }
