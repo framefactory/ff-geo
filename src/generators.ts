@@ -117,24 +117,3 @@ export function generatePlaneIndices(ib: Uint16Array | Uint32Array,
 
     return i;
 }
-
-export function generatePlaneIndicesOld(ib: Uint16Array | Uint32Array,
-    i: number, vi: number, tx: number, ty: number): number
-{
-    const nx = tx + 1;
-
-    for (let iy = 0; iy < ty; ++iy) {
-        const yy = vi + iy * nx;
-        for (let ix = 0; ix < tx; ++ix) {
-            const x = yy + ix; 
-            ib[i++] = x;
-            ib[i++] = x + nx + 1;
-            ib[i++] = x + nx;
-            ib[i++] = x;
-            ib[i++] = x + 1;
-            ib[i++] = x + nx + 1;
-        }
-    }
-
-    return i;
-}

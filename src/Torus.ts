@@ -19,7 +19,7 @@ export class Torus extends Geometry
 {
     static readonly defaultParams: ITorusParams = {
         radius: [ 1.5, 0.5 ],
-        tesselation: [ 96, 48 ]
+        tesselation: [ 128, 64 ]
     };
 
     readonly params: ITorusParams;
